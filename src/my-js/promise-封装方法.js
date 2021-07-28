@@ -35,3 +35,15 @@ function loadImageAsync(url) {
     img.src = url;
   });
 }
+
+async function serialPromises(promises) {
+  for (let i = 0; i < promises.length; i += 1) {
+    let curr =
+      promises[i] instanceof Promise
+        ? promises[i]
+        : Promise.resolve(promises[i]);
+
+    const res = await curr;
+    console.log(res);
+  }
+}
