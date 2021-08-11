@@ -67,7 +67,6 @@ class Promise {
         }
       }
 
-      // onFulfilled =
       if (_that.promiseState === PENDING) {
         _that.callbacks.push({
           onFulfilled: (value) => handler(onFulfilled),
