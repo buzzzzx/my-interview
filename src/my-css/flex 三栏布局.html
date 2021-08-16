@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>flex</title>
+    <style>
+      #container {
+        width: 100%;
+        display: flex;
+      }
+      #left,
+      #right {
+        width: 200px;
+        background-color: yellow;
+      }
+      #center {
+        flex: 1;
+        background-color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="left" class="column">left</div>
+      <div id="center" class="column">center</div>
+      <div id="right" class="column">right</div>
+    </div>
+  </body>
+</html>
