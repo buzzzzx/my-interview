@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>My useState</title>
+    <script>
+      let isMount = true; // 初始为挂载阶段
+      // App 组件的 Fiber 节点
+      const fiber = {
+        memoizedState: null,
+        stateNode: App,
+      };
+      let workInProgressHook = null; // 指向当前 hook 的指针
+
+      function run() {
+        workInProgressHook = fiber.memoizedState;
+        const app = fiber.stateNode();
+        isMount = false;
+        return app;
+      }
+
+      function dispatchAction(queue, action) {
+        const update = {
+          action,
+          next: null,
+        };
+
+        if (!queue.pending) {
+          update.next = update;
+        } else {
+          update.next = queue.pending.next;
+          queue.pending.next = update;
+        }
+
+        queue.pending = update;
+
+        // 调度更新
+        run();
+      }
+
+      function useState(initialState) {
+        let hook;
+
+        if (isMount) {
+          // 挂载时
+          hook = {
+            queue: {
+              pending: null, // 单向环状链表，指向最后一个 update
+            },
+            memoizedState: initialState,
+            next: null,
+          };
+
+          if (!fiber.memoizedState) {
+            fiber.memoizedState = hook;
+          } else {
+            workInProgressHook.next = hook;
+          }
+          workInProgressHook = hook;
+        } else {
+          // 更新时
+          hook = workInProgressHook;
+          workInProgressHook = workInProgressHook.next;
+        }
+
+        // 计算 state
+        let baseState = hook.memoizedState;
+        if (hook.queue.pending) {
+          let firstUpdate = hook.queue.pending.next;
+          do {
+            baseState = firstUpdate.action(baseState);
+            firstUpdate = firstUpdate.next;
+          } while (firstUpdate !== hook.queue.pending.next);
+
+          hook.queue.pending = null;
+        }
+
+        hook.memoizedState = baseState;
+
+        return [baseState, dispatchAction.bind(null, hook.queue)];
+      }
+
+      // App 组件
+      function App() {
+        const [num, updateNum] = useState(0);
+        const [status, updateStatus] = useState(false);
+
+        console.log("isMount", isMount);
+        console.log("num", num);
+        console.log("status", status);
+
+        return {
+          onClick() {
+            updateNum((num) => num + 1);
+          },
+          triggerStatus() {
+            updateStatus((status) => !status);
+          },
+        };
+      }
+
+      window.app = run();
+    </script>
+  </head>
+  <body></body>
+</html>
