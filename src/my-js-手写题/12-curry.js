@@ -1,6 +1,6 @@
 function currying(fn, ...args) {
   if (fn.length <= args.length) {
-    return fn.apply(this, args);
+    return fn(args);
   } else {
     return (...args2) => {
       return currying(fn, ...args, ...args2);

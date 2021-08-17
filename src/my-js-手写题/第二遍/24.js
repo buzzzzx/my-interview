@@ -8,35 +8,37 @@ class Promise {
     this.promiseResult = null;
     this.callbacks = [];
 
+    const _that = this;
+
     try {
       executor(resolve, reject);
     } catch (e) {
       reject(e);
     }
 
-    const _that = this;
     function resolve(value) {
       if (_that.promiseState !== PENDING) {
         return;
       }
       _that.promiseState = FULFILLED;
       _that.promiseResult = value;
+
       setTimeout(() => {
-        _that.callbacks.forEach(({ onFulfilled }) => {
-          onFulfilled(_that.promiseResult);
+        _that.callbacks.forEach((cb) => {
+          cb.onFulfilled(_that.promiseResult);
         });
       });
     }
-
     function reject(reason) {
       if (_that.promiseState !== PENDING) {
         return;
       }
       _that.promiseState = REJECTED;
       _that.promiseResult = reason;
+
       setTimeout(() => {
-        _that.callbacks.forEach(({ onRejected }) => {
-          onRejected(_that.promiseResult);
+        _that.callbacks.forEach((cb) => {
+          cb.onRejected(_that.promiseResult);
         });
       });
     }
@@ -44,13 +46,9 @@ class Promise {
 
   then(onFulfilled, onRejected) {
     onFulfilled =
-      typeof onFulfilled === "function" ? onFulfilled : (value) => value;
+      typeof onFulfilled === "function" ? onFulfilled : (val) => val;
     onRejected =
-      typeof onRejected === "function"
-        ? onRejected
-        : (reason) => {
-            throw reason;
-          };
+      typeof onRejected === "function" ? onRejected : (reason) => throw reason;
 
     const _that = this;
     return new Promise((resolve, reject) => {
@@ -72,13 +70,11 @@ class Promise {
           onFulfilled: (value) => handler(onFulfilled),
           onRejected: (reason) => handler(onRejected),
         });
-      }
-      if (_that.promiseState === FULFILLED) {
+      } else if (_that.promiseState === FULFILLED) {
         setTimeout(() => {
           handler(onFulfilled);
         });
-      }
-      if (_that.promiseState === REJECTED) {
+      } else {
         setTimeout(() => {
           handler(onRejected);
         });
@@ -87,7 +83,7 @@ class Promise {
   }
 
   catch(onRejected) {
-    return this.then(undefined, onRejected);
+    this.then(undefined, onRejected);
   }
 
   static resolve(value) {
@@ -112,32 +108,30 @@ class Promise {
       let count = 0;
       for (let i = 0; i < promises.length; i += 1) {
         promises[i]
-          .then((value) => {
-            res[i] = value;
+          .then((val) => {
+            res[i] = val;
             count += 1;
             if (count === promises.length) {
               resolve(res);
             }
           })
-          .catch((reason) => {
-            reject(reason);
-          });
+          .catch(reject);
       }
     });
   }
 
   static race(promises) {
     return new Promise((resolve, reject) => {
-      for (let i = 0; i < promises.length; i += 1) {
-        promises[i].then(
-          (value) => {
-            resolve(value);
+      promises.forEach((p) => {
+        p.then(
+          (val) => {
+            resolve(val);
           },
           (reason) => {
             reject(reason);
           }
         );
-      }
+      });
     });
   }
 }
