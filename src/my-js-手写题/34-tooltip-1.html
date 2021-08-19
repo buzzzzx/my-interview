@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tooltip</title>
+    <style type="text/css">
+      .body {
+        width: 500px;
+        height: 600px;
+        font-size: 14px;
+        background-color: #eee;
+      }
+      #demo {
+        width: 400px;
+
+        margin: auto;
+        position: relative;
+        border-radius: 10px;
+        background-color: #ccc;
+        box-shadow: 0 0 0 10px rgba(0, 0, 0, 0.2);
+      }
+      #demo a {
+        color: #11c2ee;
+      }
+      #demo h2 {
+        color: #3cc4a9;
+      }
+      #demo tooltip {
+        color: #3cc4a9;
+        cursor: help;
+      }
+      .tooltip-box {
+        display: block;
+        line-height: 1.6;
+        background-color: #fff;
+        border: 1px solid #666;
+        font-size: 12px;
+        border-radius: 5px;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="demo">
+      <h2>实现tooltip的效果</h2>
+      <hr />
+      <p>
+        渭城朝雨浥轻尘，客舍青青柳色新。劝君更尽一杯酒，西出阳关无故人。这首诗是著名诗人<a
+          class="tooltip"
+          id="tooltip1"
+          >王勃</a
+        >的作品。借此来表达自己对友人的依依惜别之意。
+      </p>
+
+      <p>
+        我喜欢古诗，因为它能给别人更多的理解，想象。古诗是很唯美的，随处可见的美景，比如<a
+          class="tooltip"
+          id="tooltip2"
+          >荷花</a
+        >，便有，接天莲叶无穷碧，映日荷花别样红。多美的诗呀！
+      </p>
+    </div>
+  </body>
+  <script>
+    const className = "tooltip-box";
+    const demo = document.getElementById("demo");
+    function showTooltip(obj, id, innerHtml, width, height) {
+      if (document.getElementById(id) == null) {
+        // 创建元素
+        const tooltip = document.createElement("div");
+        tooltip.id = id;
+        tooltip.innerHTML = innerHtml;
+        tooltip.className = className;
+        obj.appendChild(tooltip);
+
+        // 设置宽高
+        tooltip.style.width = width ? width + "px" : "auto";
+        tooltip.style.height = height ? height + "px" : "auto";
+
+        // 设置定位
+        tooltip.style.position = "absolute";
+        tooltip.style.display = "block";
+        let left = obj.offsetLeft;
+        let top = obj.offsetTop + 20;
+
+        // 页面缩小时不能让提示框超出浏览器
+        if (left + tooltip.offsetWidth > document.body.clientWidth) {
+          const demoLeft = demo.offsetLeft;
+          left = document.body.clientWidth - tooltip.offsetLeft - demoLeft;
+          if (left < 0) {
+            left = 0;
+          }
+        }
+
+        tooltip.style.left = left + "px";
+        tooltip.style.top = top + "px";
+
+        // 添加 mouseleave 事件
+        obj.addEventListener("mouseleave", () => {
+          setTimeout(() => {
+            document.getElementById("id").style.display = "none";
+          }, 100);
+        });
+      } else {
+        document.getElementById(id).style.display = "block";
+      }
+    }
+
+    const t1 = document.getElementById("tooltip1");
+    t1.onmouseenter = function () {
+      showTooltip(this, "t1", "唐代诗人，唐初四大才子之一", 150);
+    };
+
+    const t2 = document.getElementById("tooltip2");
+    t2.onmouseenter = function () {
+      showTooltip(this, "t4", '<img src="img/1.jpg" width="400" /> ', 400);
+    };
+  </script>
+</html>

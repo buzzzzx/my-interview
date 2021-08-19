@@ -12,18 +12,38 @@ function shallowCopy(obj) {
 }
 
 function deepCopy(obj) {
-  if (typeof obj !== "object" || obj == null) {
-    return obj;
-  }
-  const res = obj instanceof Array ? [] : {};
-  // symbol 属性
-  for (let sym of Object.getOwnPropertySymbols(obj)) {
-    res[sym] = typeof obj[sym] === "object" ? deepCopy(obj[sym]) : obj[sym];
-  }
-  // 字符串 属性
-  for (let key of Object.keys(obj)) {
-    res[key] = typeof obj[key] === "object" ? deepCopy(obj[key]) : obj[key];
+  // 解决循环引用
+  const map = new Map();
+
+  function copy(obj) {
+    if (typeof obj !== "object" || obj == null) {
+      return obj;
+    }
+
+    if (map.has(obj)) {
+      return map.get(obj);
+    }
+
+    const res = obj instanceof Array ? [] : {};
+
+    map.set(obj, res);
+
+    // symbol 属性
+    for (let sym of Object.getOwnPropertySymbols(obj)) {
+      res[sym] = typeof obj[sym] === "object" ? copy(obj[sym]) : obj[sym];
+    }
+    // 字符串 属性
+    for (let key of Object.keys(obj)) {
+      res[key] = typeof obj[key] === "object" ? copy(obj[key]) : obj[key];
+    }
+
+    return res;
   }
 
-  return res;
+  return copy(obj);
 }
+
+// test
+const A = { a: 1 };
+A.A = A;
+console.log(deepCopy(A));
