@@ -103,7 +103,7 @@ function Animal(name) {
 }
 
 function Pig(name) {
-  Animal.call(name);
+  Animal.call(this, name);
   this.type = "pig";
 }
 
